@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Vault</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <button id="add-games-button">Add Games</button>
+    <button id="add-filter-button">Pick a Game</button>
+</nav>
+
+<div class="container">
+    <section id="add-section">
+        <h1>Add to Collection</h1>
+        <form id="game-form" class="card">
+            <div class="form-group">
+                <label for="game-name">Game Name</label>
+                <input type="text" id="game-name" placeholder="e.g. Catan" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="min-players-input">min Spieleranzahl</label>
+                    <input type="number" id="min-players-input" placeholder="2" required>
+                    <label for="max-players-input">max Spieleranzahl</label>
+                    <input type="number" id="max-players-input" placeholder="4" required>
+                </div>
+                <div class="form-group">
+                    <label for="min-game-time">min Spieldauer (mins)</label>
+                    <input type="number" id="min-game-time" placeholder="30" required>
+                    <label for="max-game-time">max Spieldauer (mins)</label>
+                    <input type="number" id="max-game-time" placeholder="60" required>
+                </div>
+            </div>
+            <button id="save-to-database-button" type="submit" class="btn-primary">Save to Database</button>
+        </form>
+
+        <h2>Current Collection</h2>
+        <div id="game-list" class="grid"></div>
+    </section>
+
+    <section id="filter-section" class="hidden">
+        <h1>Game Randomizer</h1>
+        <div class="card filter-controls">
+            <input type="number" id="filter-players" placeholder="Wie viele Spieler seit ihr?">
+            <input type="number" id="filter-time" placeholder="Max Minutes">
+            <button id="pick-random-games-button" class="btn-secondary">Get 5 Suggestions</button>
+        </div>
+        <div id="random-results" class="grid"></div>
+    </section>
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>
