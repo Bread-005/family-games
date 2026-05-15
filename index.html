@@ -11,6 +11,7 @@
 <nav class="navbar">
     <button id="add-games-button">Add Games</button>
     <button id="add-filter-button">Pick a Game</button>
+    <button id="team-generator-button">Team Generator</button>
 </nav>
 
 <div class="container">
@@ -45,11 +46,38 @@
     <section id="filter-section" class="hidden">
         <h1>Game Randomizer</h1>
         <div class="card filter-controls">
-            <input type="number" id="filter-players" placeholder="Wie viele Spieler seit ihr?">
-            <input type="number" id="filter-time" placeholder="Max Minutes">
+            <input type="number" id="filter-players" placeholder="Wie viele Spieler seit ihr?" min="0">
+            <input type="number" id="filter-time" placeholder="Max Minutes" min="0">
             <button id="pick-random-games-button" class="btn-secondary">Get 5 Suggestions</button>
         </div>
         <div id="random-results" class="grid"></div>
+    </section>
+
+    <section id="team-section" class="hidden">
+        <h1>Team Generator</h1>
+        <div class="card">
+            <label for="player-names">Spielernamen (mit Komma getrennt)</label>
+            <textarea id="player-names" placeholder="Name1, Name2, Name3..." rows="4"
+                      style="width: 100%; background: #2d2d30; border: 1px solid #3f3f46; border-radius: 6px; color: white; padding: 10px; margin-bottom: 1rem; font-family: inherit;"></textarea>
+
+            <button id="generate-teams-btn" class="btn-secondary">Teams & Reihenfolge auslosen</button>
+        </div>
+
+        <div class="card">
+            <h2>Zugreihenfolge</h2>
+            <div id="turn-order-list" style="line-height: 2;"></div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="card" style="border-top: 5px solid #3b82f6;">
+                <h2 style="color: #3b82f6;">Team Blau</h2>
+                <ul id="team-blue-list" style="list-style: none; padding: 0;"></ul>
+            </div>
+            <div class="card" style="border-top: 5px solid #ef4444;">
+                <h2 style="color: #ef4444;">Team Rot</h2>
+                <ul id="team-red-list" style="list-style: none; padding: 0;"></ul>
+            </div>
+        </div>
     </section>
 </div>
 

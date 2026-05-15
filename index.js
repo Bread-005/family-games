@@ -4,15 +4,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     games.sort((a, b) => (a.number || 0) - (b.number || 0));
 
+    // todo banned list (mit localstorage) -> diese Spiele können nicht beim random picker kommen
+
     // Navigation Logic
     function showPage(pageId) {
         document.getElementById('add-section').classList.add('hidden');
         document.getElementById('filter-section').classList.add('hidden');
+        document.getElementById('team-section').classList.add('hidden');
         document.getElementById(pageId).classList.remove('hidden');
         if (pageId === 'add-section') renderList();
     }
     document.getElementById("add-games-button").addEventListener('click', () => showPage("add-section"));
     document.getElementById("add-filter-button").addEventListener('click', () => showPage("filter-section"));
+    document.getElementById("team-generator-button").addEventListener('click', () => showPage("team-section"));
 
     // --- Automatische Ausfüll-Logik mit Backup ---
     const nameInput = document.getElementById('game-name');
@@ -186,6 +190,44 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.innerHTML = `<strong>${game.name}</strong>`;
             resultsDiv.appendChild(item);
         });
+    });
+
+    // 2. Team-Generator Logik
+    document.getElementById("generate-teams-btn").addEventListener("click", () => {
+        const input = document.getElementById("player-names").value;
+        // Namen splitten, Trimmen (Leerzeichen entfernen) und leere Einträge filtern
+        let players = input.split(',').map(name => name.trim()).filter(name => name !== "");
+
+        if (players.length < 2) {
+            alert("Bitte gib mindestens 2 Namen ein!");
+            return;
+        }
+
+        players.sort(() => Math.random() - 0.5);
+
+        // --- Anzeige Zugreihenfolge ---
+        document.getElementById("turn-order-list").innerHTML = players.map((p, i) => `
+           <div style="background: #27272a; margin-bottom: 5px; padding: 5px 15px; border-radius: 4px;">
+             <span style="color: #9333ea; font-weight: bold; margin-right: 10px;">${i + 1}.</span> ${p}
+           </div>
+        `).join('');
+
+        // --- Teams aufteilen ---
+        const teamBlue = [];
+        const teamRed = [];
+
+        players.forEach((player, index) => {
+            // Abwechselnd aufteilen (Index 0, 2, 4... Team Blau | 1, 3, 5... Team Rot)
+            if (index % 2 === 0) {
+                teamBlue.push(player);
+            } else {
+                teamRed.push(player);
+            }
+        });
+
+        // --- Anzeige Teams ---
+        document.getElementById("team-blue-list").innerHTML = teamBlue.map(p => `<li style="padding: 5px 0; border-bottom: 1px solid #333;">${p}</li>`).join('');
+        document.getElementById("team-red-list").innerHTML = teamRed.map(p => `<li style="padding: 5px 0; border-bottom: 1px solid #333;">${p}</li>`).join('');
     });
 
     // Run render on load
