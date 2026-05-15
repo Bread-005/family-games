@@ -10,6 +10,7 @@
 
 <nav class="navbar">
     <button id="add-games-button">Add Games</button>
+    <button id="banlist-button">Banlist</button>
     <button id="add-filter-button">Pick a Game</button>
     <button id="team-generator-button">Team Generator</button>
 </nav>
@@ -41,6 +42,21 @@
 
         <h2>Current Collection</h2>
         <div id="game-list" class="grid"></div>
+    </section>
+
+    <section id="ban-section" class="hidden">
+        <h1>Spiele bannen</h1>
+        <div class="card">
+            <label>Spiel auswählen, um es zu bannen:</label>
+            <div class="form-row">
+                <select id="ban-select" style="flex: 2; background: #2d2d30; color: white; border-radius: 6px; padding: 0.8rem; border: 1px solid #3f3f46;"></select>
+                <button id="add-to-ban-btn" class="btn-primary" style="flex: 1;">Bannen</button>
+            </div>
+        </div>
+
+        <h2>Aktuell gebannte Spiele</h2>
+        <div id="banned-games-list" class="grid">
+        </div>
     </section>
 
     <section id="filter-section" class="hidden">

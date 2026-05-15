@@ -1,22 +1,23 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const API_URL = "https://clocktower-homebrew-collection-13pz.onrender.com";
     let games = await fetch(API_URL + '/boardgames').then(res => res.json());
+    let bannedGames = JSON.parse(localStorage.getItem('banned_games')) || [];
 
     games.sort((a, b) => (a.number || 0) - (b.number || 0));
-
-    // todo banned list (mit localstorage) -> diese Spiele können nicht beim random picker kommen
 
     // Navigation Logic
     function showPage(pageId) {
         document.getElementById('add-section').classList.add('hidden');
         document.getElementById('filter-section').classList.add('hidden');
         document.getElementById('team-section').classList.add('hidden');
+        document.getElementById('ban-section').classList.add('hidden');
         document.getElementById(pageId).classList.remove('hidden');
         if (pageId === 'add-section') renderList();
     }
     document.getElementById("add-games-button").addEventListener('click', () => showPage("add-section"));
     document.getElementById("add-filter-button").addEventListener('click', () => showPage("filter-section"));
     document.getElementById("team-generator-button").addEventListener('click', () => showPage("team-section"));
+    document.getElementById("banlist-button").addEventListener('click', () => showPage("ban-section"));
 
     // --- Automatische Ausfüll-Logik mit Backup ---
     const nameInput = document.getElementById('game-name');
@@ -167,7 +168,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const maxTime = parseInt(document.getElementById('filter-time').value) || Infinity;
 
         // 1. Filter based on user input
-        const availableGames = games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) && game.maxTime <= maxTime);
+        const availableGames = games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) &&
+            game.maxTime <= maxTime && !bannedGames.includes(game.name));
 
         // 2. Shuffle the filtered list
         const shuffled = availableGames.sort(() => 0.5 - Math.random());
@@ -230,6 +232,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById("team-red-list").innerHTML = teamRed.map(p => `<li style="padding: 5px 0; border-bottom: 1px solid #333;">${p}</li>`).join('');
     });
 
+    // Dropdown mit allen verfügbaren Spielen füllen
+    function updateBanSelect() {
+        const select = document.getElementById('ban-select');
+        // Nur Spiele zeigen, die noch NICHT gebannt sind
+        const available = games.filter(g => !bannedGames.includes(g.name));
+
+        select.innerHTML = available.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
+    }
+
+    // Banliste rendern
+    function renderBanlist() {
+        const listDiv = document.getElementById('banned-games-list');
+        listDiv.innerHTML = '';
+
+        if (bannedGames.length === 0) {
+            listDiv.innerHTML = '<p style="color: #a1a1aa;">Keine Spiele gebannt.</p>';
+            return;
+        }
+
+        bannedGames.forEach(gameName => {
+            const item = document.createElement('div');
+            item.className = 'game-card';
+            item.style.borderColor = '#ef4444'; // Rot für gebannt
+            item.innerHTML = `
+            <strong>${gameName}</strong>
+            <button onclick="unbanGame('${gameName}')" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.8rem; display:block; margin-top:5px;">Entbannen</button>
+        `;
+            listDiv.appendChild(item);
+        });
+    }
+
+    // Spiel bannen
+    document.getElementById('add-to-ban-btn').addEventListener('click', () => {
+        const selectedName = document.getElementById('ban-select').value;
+        if (selectedName && !bannedGames.includes(selectedName)) {
+            bannedGames.push(selectedName);
+            localStorage.setItem('banned_games', JSON.stringify(bannedGames));
+            renderBanlist();
+            updateBanSelect();
+        }
+    });
+
+    // Spiel entbannen (Global machen für das onclick im HTML)
+    window.unbanGame = function(name) {
+        bannedGames = bannedGames.filter(g => g !== name);
+        localStorage.setItem('banned_games', JSON.stringify(bannedGames));
+        renderBanlist();
+        updateBanSelect();
+    };
+
     // Run render on load
     renderList();
+    renderBanlist();
+    updateBanSelect();
 });
