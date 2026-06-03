@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (document.getElementById("save-to-database-button").textContent === "Update Game") {
             const game = newGame;
-            delete game.id;
+            delete game.number;
             await fetch(API_URL + '/boardgames/update/' + newGame.name, {
                 method: "PUT",
                 headers: {'Content-Type': 'application/json'},
@@ -135,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderList() {
         const listDiv = document.getElementById("game-list");
         listDiv.innerHTML = "";
+        games.sort((a, b) => a.number - b.number);
 
         games.forEach(game => {
             const item = document.createElement('div');
