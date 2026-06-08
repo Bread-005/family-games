@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banlist</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="index.js" type="module"></script>
+</head>
+<body>
+    <section id="ban-section">
+        <h1 style="text-align: center">Spiele bannen</h1>
+        <div class="card">
+            <label for="ban-select">Spiel auswählen, um es zu bannen:</label>
+            <div class="form-row">
+                <select id="ban-select" style="flex: 2; background: #2d2d30; color: white; border-radius: 6px; padding: 0.8rem; border: 1px solid #3f3f46;"></select>
+                <button id="add-to-ban-btn" class="button-primary" style="flex: 1;">Bannen</button>
+            </div>
+        </div>
+
+        <h2 style="text-align: center">Aktuell gebannte Spiele</h2>
+        <div id="banned-games-list" class="grid">
+        </div>
+    </section>
+</body>
+</html>

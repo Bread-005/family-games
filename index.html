@@ -3,100 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Vault</title>
+    <title>Game Collection</title>
     <link rel="stylesheet" href="style.css">
+    <script src="index.js" type="module"></script>
 </head>
 <body>
-
-<nav class="navbar">
-    <button id="add-games-button">Add Games</button>
-    <button id="banlist-button">Banlist</button>
-    <button id="add-filter-button">Pick a Game</button>
-    <button id="team-generator-button">Team Generator</button>
-</nav>
-
-<div class="container">
-    <section id="add-section">
-        <h1>Add to Collection</h1>
-        <form id="game-form" class="card">
-            <div class="form-group">
-                <label for="game-name">Game Name</label>
-                <input type="text" id="game-name" placeholder="e.g. Catan" required>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="min-players-input">min Spieleranzahl</label>
-                    <input type="number" id="min-players-input" placeholder="2" required>
-                    <label for="max-players-input">max Spieleranzahl</label>
-                    <input type="number" id="max-players-input" placeholder="4" required>
-                </div>
-                <div class="form-group">
-                    <label for="min-game-time">min Spieldauer (mins)</label>
-                    <input type="number" id="min-game-time" placeholder="30" required>
-                    <label for="max-game-time">max Spieldauer (mins)</label>
-                    <input type="number" id="max-game-time" placeholder="60" required>
-                </div>
-            </div>
-            <button id="save-to-database-button" type="submit" class="btn-primary">Save to Database</button>
-        </form>
-
+    <div class="game-collection">
         <h2>Current Collection</h2>
-        <div id="game-list" class="grid"></div>
-    </section>
-
-    <section id="ban-section" class="hidden">
-        <h1>Spiele bannen</h1>
-        <div class="card">
-            <label>Spiel auswählen, um es zu bannen:</label>
-            <div class="form-row">
-                <select id="ban-select" style="flex: 2; background: #2d2d30; color: white; border-radius: 6px; padding: 0.8rem; border: 1px solid #3f3f46;"></select>
-                <button id="add-to-ban-btn" class="btn-primary" style="flex: 1;">Bannen</button>
-            </div>
-        </div>
-
-        <h2>Aktuell gebannte Spiele</h2>
-        <div id="banned-games-list" class="grid">
-        </div>
-    </section>
-
-    <section id="filter-section" class="hidden">
-        <h1>Game Randomizer</h1>
-        <div class="card filter-controls">
-            <input type="number" id="filter-players" placeholder="Wie viele Spieler seit ihr?" min="0">
-            <input type="number" id="filter-time" placeholder="Max Minutes" min="0">
-            <button id="pick-random-games-button" class="btn-secondary">Get 5 Suggestions</button>
-        </div>
-        <div id="random-results" class="grid"></div>
-    </section>
-
-    <section id="team-section" class="hidden">
-        <h1>Team Generator</h1>
-        <div class="card">
-            <label for="player-names">Spielernamen (mit Komma getrennt)</label>
-            <textarea id="player-names" placeholder="Name1, Name2, Name3..." rows="4"
-                      style="width: 100%; background: #2d2d30; border: 1px solid #3f3f46; border-radius: 6px; color: white; padding: 10px; margin-bottom: 1rem; font-family: inherit;"></textarea>
-
-            <button id="generate-teams-btn" class="btn-secondary">Teams & Reihenfolge auslosen</button>
-        </div>
-
-        <div class="card">
-            <h2>Zugreihenfolge</h2>
-            <div id="turn-order-list" style="line-height: 2;"></div>
-        </div>
-
-        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <div class="card" style="border-top: 5px solid #3b82f6;">
-                <h2 style="color: #3b82f6;">Team Blau</h2>
-                <ul id="team-blue-list" style="list-style: none; padding: 0;"></ul>
-            </div>
-            <div class="card" style="border-top: 5px solid #ef4444;">
-                <h2 style="color: #ef4444;">Team Rot</h2>
-                <ul id="team-red-list" style="list-style: none; padding: 0;"></ul>
-            </div>
-        </div>
-    </section>
-</div>
-
-<script src="index.js"></script>
+        <div id="game-list"></div>
+    </div>
 </body>
 </html>

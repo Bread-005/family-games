@@ -12,89 +12,138 @@ body {
     color: var(--text);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-}
 
-.navbar {
-    background: #18181b;
-    padding: 1rem;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    border-bottom: 1px solid #333;
-}
+    .navbar {
+        background: #18181b;
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        border-bottom: 1px solid #333;
 
-.navbar button {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-.navbar button:hover { color: var(--primary); }
-
-.container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-
-.card {
-    background: var(--card-bg);
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    margin-bottom: 2rem;
-}
-
-.filter-controls {
-    * {
-        margin: 5px 0;
+        a {
+            color: white;
+        }
     }
-}
 
-.form-group { margin-bottom: 1rem; flex: 1; }
-.form-row { display: flex; gap: 1rem; }
+    .game-collection {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        text-align: center;
 
-label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-dim); }
+        #game-list {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+    }
 
-input {
-    width: 100%;
-    padding: 0.8rem;
-    background: #2d2d30;
-    border: 1px solid #3f3f46;
-    border-radius: 6px;
-    color: white;
-    box-sizing: border-box;
-}
+    section {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0.5rem 1rem;
 
-.btn-primary, .btn-secondary {
-    width: 100%;
-    padding: 1rem;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
 
-.btn-primary {
-    background: var(--primary);
-}
-.btn-secondary {
-    background: var(--secondary);
-}
+        .form-group {
+            margin-bottom: 1rem;
+            flex: 1;
+        }
 
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-}
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
 
-.game-card {
-    background: #27272a;
-    padding: 1rem;
-    border-radius: 8px;
-    border-left: 4px solid var(--primary);
-}
+        #game-form {
+            label {
+                margin-top: 1rem;
+            }
 
-.hidden {
-    display: none;
+            button {
+                width: 50%;
+                transform: translateX(+50%);
+            }
+        }
+    }
+
+    #filter-section, #team-section {
+        text-align: center;
+
+        .filter-controls {
+            * {
+                margin: 5px 0;
+            }
+        }
+    }
+
+    .card {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        margin-bottom: 2rem;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: var(--text-dim);
+    }
+
+    input {
+        width: 100%;
+        padding: 0.8rem;
+        background: #2d2d30;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        color: white;
+        box-sizing: border-box;
+    }
+
+    .button-primary, .button-secondary {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .button-primary {
+        background: var(--primary);
+    }
+    .button-secondary {
+        background: var(--secondary);
+    }
+
+    .game-card {
+        background: #27272a;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--primary);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    textarea {
+        width: 97%;
+        background: #2d2d30;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        color: white;
+        padding: 10px;
+        margin-bottom: 1rem;
+        font-family: inherit;
+        resize: none;
+    }
 }
