@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // 1. Filter based on user input
             const availableGames = games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) &&
-                game.maxTime <= maxTime && !bannedGames.includes(game.name));
+                game.maxTime <= maxTime && !bannedGames.includes(game.name) && !game.isCopy && !game.isExpansion);
 
             // 2. Shuffle the filtered list
             const shuffled = availableGames.sort(() => 0.5 - Math.random());
