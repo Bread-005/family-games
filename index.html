@@ -3,13 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Collection</title>
+    <title>Spielesammlung</title>
     <link rel="stylesheet" href="style.css">
     <script src="index.js" type="module"></script>
 </head>
 <body>
     <div class="game-collection">
-        <h2>Current Collection</h2>
+        <h2>Deine Spielesammlung</h2>
+        <div class="sort-controls">
+            <label for="sort-select">Sortiert nach</label>
+            <select id="sort-select">
+                <option value="first-added">Zuerst hinzugefügt</option>
+                <option value="alphabet">Alphabet</option>
+                <option value="playerCount">Spieleranzahl</option>
+                <option value="minTime">Min. Spielzeit</option>
+                <option value="maxTime">Max. Spielzeit</option>
+                <option value="releaseDate">Erscheinungsdatum</option>
+                <option value="firstPlayedDate">Erstmals gespielt</option>
+            </select>
+        </div>
         <div id="game-list"></div>
     </div>
 </body>

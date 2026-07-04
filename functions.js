@@ -5,19 +5,19 @@ function buildNavigationBar() {
     for (let i = 0; i < 5; i++) {
         const anchor = document.createElement("a");
         if (i === 0) {
-            anchor.textContent = "Game Collection";
+            anchor.textContent = "Spielesammlung";
             anchor.href = "index.html";
         }
         if (i === 1) {
-            anchor.textContent = "Edit Games";
+            anchor.textContent = "Spiele bearbeiten";
             anchor.href = "editCollection.html";
         }
         if (i === 2) {
-            anchor.textContent = "Banlist";
+            anchor.textContent = "Bann-Liste";
             anchor.href = "banlist.html";
         }
         if (i === 3) {
-            anchor.textContent = "Random Game Picker";
+            anchor.textContent = "Zufallsgenerator";
             anchor.href = "randomGame.html";
         }
         if (i === 4) {
@@ -32,7 +32,6 @@ function buildNavigationBar() {
 function showGameCollection(games) {
     const listDiv = document.getElementById("game-list");
     listDiv.innerHTML = "";
-    games.sort((a, b) => a.number - b.number);
 
     games.forEach(game => {
         const item = document.createElement('div');

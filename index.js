@@ -1,5 +1,47 @@
 import {buildNavigationBar, showGameCollection} from "./functions.js";
 
+function parseDateDE(dateString) {
+    if (!dateString) {
+        return new Date(0);
+    }
+    const parts = dateString.split(".");
+    if (parts[0] === "xx") {
+        parts[0] = "15";
+    }
+    if (parts[1] === "xx") {
+        parts[1] = "6";
+    }
+    if (dateString === "never") {
+        return new Date(2000, 0, 1);
+    }
+    if (parts.length !== 3) {
+        return new Date(0);
+    }
+    return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+}
+
+function sortGames(games, sortKey) {
+    const sorted = [...games];
+    if (sortKey === "first-added") {
+        // database adding order
+    } else if (sortKey === "alphabet") {
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortKey === "playerCount") {
+        sorted.sort((a, b) => (a.minPlayers || 0) - (b.minPlayers || 0));
+    } else if (sortKey === "minTime") {
+        sorted.sort((a, b) => (a.minTime || 0) - (b.minTime || 0));
+    } else if (sortKey === "maxTime") {
+        sorted.sort((a, b) => (a.maxTime || 0) - (b.maxTime || 0));
+    } else if (sortKey === "releaseDate") {
+        sorted.sort((a, b) => parseDateDE(a.releaseDate) - parseDateDE(b.releaseDate));
+    } else if (sortKey === "firstPlayedDate") {
+        sorted.sort((a, b) => parseDateDE(a.firstPlayedDate) - parseDateDE(b.firstPlayedDate));
+    } else {
+        sorted.sort((a, b) => (a.number || 0) - (b.number || 0));
+    }
+    return sorted;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     buildNavigationBar();
 
@@ -7,11 +49,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     let games = await fetch(API_URL + "/boardgames").then(res => res.json());
     let bannedGames = JSON.parse(localStorage.getItem("banned_games")) || [];
 
-    games.sort((a, b) => (a.number || 0) - (b.number || 0));
-
     // Game Collection page
     if (window.location.pathname.includes("index.html")) {
-        showGameCollection(games);
+        const sortSelect = document.getElementById("sort-select");
+        const savedSortKey = localStorage.getItem("game_sort_key") || "first-added";
+        sortSelect.value = savedSortKey;
+        showGameCollection(sortGames(games, savedSortKey));
+
+        sortSelect.addEventListener("change", (event) => {
+            localStorage.setItem("game_sort_key", event.target.value);
+            showGameCollection(sortGames(games, event.target.value));
+        });
     }
 
     // Edit Collection page
