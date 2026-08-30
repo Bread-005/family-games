@@ -169,4 +169,24 @@ body {
         font-family: inherit;
         resize: none;
     }
+
+    @media (max-width: 600px) {
+        .game-collection {
+            padding: 0 0.5rem;
+
+            #game-list {
+                grid-template-columns: repeat(2, minmax(140px, 160px));
+                justify-content: center;
+                gap: 0.5rem;
+            }
+        }
+
+        .game-card {
+            padding: 0.6rem;
+        }
+
+        .card {
+            padding: 1rem;
+        }
+    }
 }
