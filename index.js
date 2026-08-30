@@ -229,35 +229,72 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Random Game Picker page
     if (window.location.pathname.includes("randomGame.html")) {
+        let availableGames = [];
+        let selectedGames = [];
+
+        function pickRandomGame(pool, excludedNames) {
+            const candidates = pool.filter(game => !excludedNames.includes(game.name));
+            const source = candidates.length > 0 ? candidates : pool;
+            return source[Math.floor(Math.random() * source.length)];
+        }
+
+        function renderRandomResults() {
+            const resultsDiv = document.getElementById("random-results");
+            resultsDiv.innerHTML = "";
+
+            if (selectedGames.length === 0) {
+                resultsDiv.innerHTML = '<p>No games match those settings.</p>';
+                return;
+            }
+
+            selectedGames.forEach((game, index) => {
+                const item = document.createElement("div");
+                item.className = "game-card";
+                item.style.borderColor = "#9333ea";
+                item.style.flexDirection = "row";
+                item.style.justifyContent = "flex-start";
+                item.style.gap = "0.75rem";
+
+                const rerollButton = document.createElement("button");
+                rerollButton.textContent = "🔁";
+                rerollButton.title = "Spiel neu auswürfeln";
+                rerollButton.style.background = "none";
+                rerollButton.style.border = "none";
+                rerollButton.style.color = "#9333ea";
+                rerollButton.style.cursor = "pointer";
+                rerollButton.style.fontSize = "1.2rem";
+                rerollButton.addEventListener("click", () => {
+                    const excludedNames = selectedGames
+                        .filter((selectedGame, selectedIndex) => selectedIndex !== index)
+                        .map(selectedGame => selectedGame.name);
+                    selectedGames[index] = pickRandomGame(availableGames, excludedNames);
+                    renderRandomResults();
+                });
+                item.append(rerollButton);
+
+                const gameName = document.createElement("strong");
+                gameName.textContent = game.name;
+                item.append(gameName);
+
+                resultsDiv.appendChild(item);
+            });
+        }
+
         document.getElementById("pick-random-games-button").addEventListener("click", () => {
             const playerCount = parseInt(document.getElementById("filter-players").value) || 0;
             const maxTime = parseInt(document.getElementById("filter-time").value) || Infinity;
 
             // 1. Filter based on user input
-            const availableGames = games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) &&
+            availableGames = games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) &&
                 game.maxTime <= maxTime && !bannedGames.includes(game.name) && !game.isCopy && !game.isExpansion);
 
             // 2. Shuffle the filtered list
-            const shuffled = availableGames.sort(() => 0.5 - Math.random());
+            const shuffled = [...availableGames].sort(() => 0.5 - Math.random());
 
             // 3. Take first 5
-            const selected = shuffled.slice(0, 5);
+            selectedGames = shuffled.slice(0, 5);
 
-            const resultsDiv = document.getElementById("random-results");
-            resultsDiv.innerHTML = "";
-
-            if (selected.length === 0) {
-                resultsDiv.innerHTML = '<p>No games match those settings.</p>';
-                return;
-            }
-
-            selected.forEach(game => {
-                const item = document.createElement("div");
-                item.className = "game-card";
-                item.style.borderColor = "#9333ea";
-                item.innerHTML = `<strong>${game.name}</strong>`;
-                resultsDiv.appendChild(item);
-            });
+            renderRandomResults();
         });
     }
 
