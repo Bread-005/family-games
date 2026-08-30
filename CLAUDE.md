@@ -8,7 +8,6 @@ All pages share a single entry point (`index.js`) loaded as an ES module. Page-s
 
 ```
 index.html          — Game collection with sort filter
-editCollection.html — Add / update games in the database
 banlist.html        — Ban games from the random picker
 randomGame.html     — Random game suggestions based on player count & time
 teams.html          — Random turn order and team splitter

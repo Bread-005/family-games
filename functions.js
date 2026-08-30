@@ -2,25 +2,21 @@ function buildNavigationBar() {
     const navBar = document.createElement("nav");
     navBar.classList.add("navbar");
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) {
         const anchor = document.createElement("a");
         if (i === 0) {
             anchor.textContent = "Spielesammlung";
             anchor.href = "index.html";
         }
         if (i === 1) {
-            anchor.textContent = "Spiele bearbeiten";
-            anchor.href = "editCollection.html";
-        }
-        if (i === 2) {
             anchor.textContent = "Bann-Liste";
             anchor.href = "banlist.html";
         }
-        if (i === 3) {
+        if (i === 2) {
             anchor.textContent = "Zufallsgenerator";
             anchor.href = "randomGame.html";
         }
-        if (i === 4) {
+        if (i === 3) {
             anchor.textContent = "Team Generator";
             anchor.href = "teams.html";
         }
