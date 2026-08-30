@@ -45,7 +45,7 @@ function sortGames(games, sortKey) {
 document.addEventListener("DOMContentLoaded", async () => {
     buildNavigationBar();
 
-    const API_URL = "https://clocktower-homebrew-collection-13pz.onrender.com";
+    const API_URL = "https://hobby-projects-api.onrender.com";
     let games = await fetch(API_URL + "/boardgames").then(res => res.json());
     let bannedGames = JSON.parse(localStorage.getItem("banned_games")) || [];
 
