@@ -1,3 +1,27 @@
+function showLoadingScreen() {
+    const overlay = document.createElement("div");
+    overlay.id = "loading-screen";
+    overlay.className = "loading-screen";
+
+    const spinner = document.createElement("div");
+    spinner.className = "loading-spinner";
+    overlay.append(spinner);
+
+    const loadingText = document.createElement("p");
+    loadingText.className = "loading-text";
+    loadingText.textContent = "Auf Server warten...";
+    overlay.append(loadingText);
+
+    document.body.append(overlay);
+}
+
+function hideLoadingScreen() {
+    const overlay = document.getElementById("loading-screen");
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
 function buildNavigationBar() {
     const navBar = document.createElement("nav");
     navBar.classList.add("navbar");
@@ -55,4 +79,4 @@ function showGameCollection(games) {
     });
 }
 
-export {buildNavigationBar, showGameCollection};
+export {buildNavigationBar, showGameCollection, showLoadingScreen, hideLoadingScreen};

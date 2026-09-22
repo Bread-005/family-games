@@ -1,4 +1,4 @@
-import {buildNavigationBar, showGameCollection} from "./functions.js";
+import {buildNavigationBar, showGameCollection, showLoadingScreen, hideLoadingScreen} from "./functions.js";
 
 function parseDateDE(dateString) {
     if (!dateString) {
@@ -44,10 +44,13 @@ function sortGames(games, sortKey) {
 
 document.addEventListener("DOMContentLoaded", async () => {
     buildNavigationBar();
+    showLoadingScreen();
 
     const API_URL = "https://hobby-projects-api.onrender.com";
     let games = await fetch(API_URL + "/boardgames").then(res => res.json());
     let bannedGames = JSON.parse(localStorage.getItem("banned_games")) || [];
+
+    hideLoadingScreen();
 
     // Game Collection page
     if (window.location.pathname.includes("index.html")) {
