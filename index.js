@@ -405,6 +405,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }, { passive: false });
                 item.addEventListener("touchend", () => {
                     item.classList.remove("touch-lifted");
+                    item.classList.remove("dragging");
                     item.style.transform = "";
                     touchDraggedIndex = null;
                     touchStartClientY = null;
@@ -502,6 +503,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             socket.on("room-state", applyRoomState);
             socket.on("room-error", showRoomError);
+
+            document.querySelectorAll(".navbar a").forEach((navigationLink) => {
+                navigationLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    socket.emit("leave-room", { roomCode, name: userName });
+                    window.location.href = navigationLink.href;
+                });
+            });
 
             document.getElementById("room-start-ranking-button").addEventListener("click", () => {
                 socket.emit("set-games", { roomCode, name: userName, games: pickedGames.map(game => game.name) });

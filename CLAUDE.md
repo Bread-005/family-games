@@ -110,6 +110,7 @@ of rooms that had already completed before the restart.
 | Socket.IO event    | Direction        | Purpose                                                        |
 |---------------------|------------------|-----------------------------------------------------------------|
 | `join-room`         | client → server  | `{ roomCode, name }` — joins the room, idempotent per name      |
+| `leave-room`        | client → server  | `{ roomCode, name }` — immediately removes the participant, bypassing the disconnect grace period; sent by the client before navigating away from `room.html` |
 | `set-games`         | client → server  | `{ roomCode, name, games }` — host only, once per room, requires at least 2 games |
 | `submit-ranking`    | client → server  | `{ roomCode, name, ranking }` — must be a permutation of the room's games, games must already be set |
 | `room-state`        | server → room    | Broadcast after every join/set-games/submit: `{ roomCode, creatorName, games, participants, isCompleted, results? }`; `games` is `null` until the host picks them |

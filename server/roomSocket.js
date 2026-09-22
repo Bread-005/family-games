@@ -55,6 +55,17 @@ function registerRoomSocketHandlers(io, rankingsCollection) {
             scheduleParticipantLeave(io, socket.data.roomCode, socket.data.name);
         });
 
+        socket.on("leave-room", ({ roomCode, name }) => {
+            if (!isNonEmptyString(roomCode) || !isNonEmptyString(name)) {
+                return;
+            }
+
+            cancelPendingParticipantLeave(roomCode, name);
+            handleParticipantLeave(io, roomCode, name);
+            delete socket.data.roomCode;
+            delete socket.data.name;
+        });
+
         socket.on("preview-games", ({ roomCode, name, games }) => {
             const room = getRoom(roomCode);
             if (!room) {
