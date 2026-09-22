@@ -12,6 +12,9 @@ import {
     listOpenRooms,
 } from "./roomStore.js";
 
+const DISCONNECT_GRACE_PERIOD_MILLISECONDS = 2000;
+const pendingParticipantLeaves = new Map();
+
 /**
  * Wires up the Socket.IO events that keep all participants of a room in sync:
  * joining, submitting a ranking, and broadcasting the resulting room state.
@@ -38,6 +41,8 @@ function registerRoomSocketHandlers(io, rankingsCollection) {
                 return;
             }
 
+            cancelPendingParticipantLeave(roomCode, name.trim());
+
             addParticipant(roomCode, name.trim());
             socket.data.roomCode = roomCode;
             socket.data.name = name.trim();
@@ -47,7 +52,7 @@ function registerRoomSocketHandlers(io, rankingsCollection) {
         });
 
         socket.on("disconnect", () => {
-            handleParticipantLeave(io, socket.data.roomCode, socket.data.name);
+            scheduleParticipantLeave(io, socket.data.roomCode, socket.data.name);
         });
 
         socket.on("preview-games", ({ roomCode, name, games }) => {
@@ -140,8 +145,60 @@ function registerRoomSocketHandlers(io, rankingsCollection) {
 }
 
 /**
- * Removes a participant from their room after they disconnect (e.g. by navigating away
- * or closing the tab). Dissolves the room once its last participant has left, otherwise
+ * Builds the lookup key used to track a participant's pending removal timer.
+ * @param {string} roomCode - The room the participant belongs to.
+ * @param {string} name - The participant's name.
+ * @returns {string} The composite key identifying this participant within pendingParticipantLeaves.
+ */
+function buildPendingLeaveKey(roomCode, name) {
+    return `${roomCode}:${name}`;
+}
+
+/**
+ * Schedules a participant's removal after a short grace period instead of removing them
+ * immediately. This absorbs a page reload, where the client's socket disconnects and a new
+ * one reconnects (and rejoins) within a fraction of a second: cancelPendingParticipantLeave()
+ * cancels the scheduled removal before it fires, so the reload is invisible to other
+ * participants. A genuine leave (navigating away, closing the tab) has nothing left to cancel
+ * it, so the removal proceeds once the grace period elapses.
+ * @param {import("socket.io").Server} io - The Socket.IO server.
+ * @param {string|undefined} roomCode - The room the disconnecting socket had joined, if any.
+ * @param {string|undefined} name - The disconnecting participant's name, if any.
+ */
+function scheduleParticipantLeave(io, roomCode, name) {
+    if (!roomCode || !name) {
+        return;
+    }
+
+    const pendingLeaveKey = buildPendingLeaveKey(roomCode, name);
+    cancelPendingParticipantLeave(roomCode, name);
+
+    const leaveTimeout = setTimeout(() => {
+        pendingParticipantLeaves.delete(pendingLeaveKey);
+        handleParticipantLeave(io, roomCode, name);
+    }, DISCONNECT_GRACE_PERIOD_MILLISECONDS);
+
+    pendingParticipantLeaves.set(pendingLeaveKey, leaveTimeout);
+}
+
+/**
+ * Cancels a participant's pending removal timer, if one is scheduled. Called when the
+ * participant rejoins (e.g. after a page reload) before the grace period elapses.
+ * @param {string} roomCode - The room the participant belongs to.
+ * @param {string} name - The participant's name.
+ */
+function cancelPendingParticipantLeave(roomCode, name) {
+    const pendingLeaveKey = buildPendingLeaveKey(roomCode, name);
+    const pendingLeaveTimeout = pendingParticipantLeaves.get(pendingLeaveKey);
+    if (pendingLeaveTimeout) {
+        clearTimeout(pendingLeaveTimeout);
+        pendingParticipantLeaves.delete(pendingLeaveKey);
+    }
+}
+
+/**
+ * Removes a participant from their room once their disconnect grace period has elapsed
+ * without them rejoining. Dissolves the room once its last participant has left, otherwise
  * broadcasts the updated room state to whoever remains.
  * @param {import("socket.io").Server} io - The Socket.IO server.
  * @param {string|undefined} roomCode - The room the disconnecting socket had joined, if any.
