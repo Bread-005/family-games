@@ -1,4 +1,11 @@
-import {buildNavigationBar, showGameCollection, showLoadingScreen, hideLoadingScreen} from "./functions.js";
+import {
+    buildNavigationBar,
+    showGameCollection,
+    showLoadingScreen,
+    hideLoadingScreen,
+    getStorageValue,
+    setStorageValue,
+} from "./functions.js";
 
 function parseDateDE(dateString) {
     if (!dateString) {
@@ -48,19 +55,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const API_URL = "https://hobby-projects-api.onrender.com";
     let games = await fetch(API_URL + "/boardgames").then(res => res.json());
-    let bannedGames = JSON.parse(localStorage.getItem("banned_games")) || [];
+    let bannedGames = getStorageValue("bannedGames", []);
 
     hideLoadingScreen();
 
     // Game Collection page
     if (window.location.pathname.includes("index.html")) {
         const sortSelect = document.getElementById("sort-select");
-        const savedSortKey = localStorage.getItem("game_sort_key") || "first-added";
+        const savedSortKey = getStorageValue("gameSortKey", "first-added");
         sortSelect.value = savedSortKey;
         showGameCollection(sortGames(games, savedSortKey));
 
         sortSelect.addEventListener("change", (event) => {
-            localStorage.setItem("game_sort_key", event.target.value);
+            setStorageValue("gameSortKey", event.target.value);
             showGameCollection(sortGames(games, event.target.value));
         });
     }
@@ -100,7 +107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const selectedName = document.getElementById("ban-select").value;
             if (selectedName && !bannedGames.includes(selectedName)) {
                 bannedGames.push(selectedName);
-                localStorage.setItem("banned_games", JSON.stringify(bannedGames));
+                setStorageValue("bannedGames", bannedGames);
                 renderBanlist();
                 updateBanSelect();
             }
@@ -109,7 +116,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // unban game
         window.unbanGame = function(name) {
             bannedGames = bannedGames.filter(g => g !== name);
-            localStorage.setItem("banned_games", JSON.stringify(bannedGames));
+            setStorageValue("bannedGames", bannedGames);
             renderBanlist();
             updateBanSelect();
         };

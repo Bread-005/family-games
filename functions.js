@@ -1,3 +1,35 @@
+const STORAGE_KEY = "family-games";
+
+/**
+ * Reads the shared family-games localStorage object.
+ * @returns {object} The stored settings, or an empty object if nothing is stored yet.
+ */
+function getStorage() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+}
+
+/**
+ * Reads a single value from the shared family-games localStorage object.
+ * @param {string} key - The property name to read.
+ * @param {*} defaultValue - The value to return if the property is not set.
+ * @returns {*} The stored value, or defaultValue if it is not set.
+ */
+function getStorageValue(key, defaultValue) {
+    const storage = getStorage();
+    return key in storage ? storage[key] : defaultValue;
+}
+
+/**
+ * Writes a single value into the shared family-games localStorage object.
+ * @param {string} key - The property name to write.
+ * @param {*} value - The value to store.
+ */
+function setStorageValue(key, value) {
+    const storage = getStorage();
+    storage[key] = value;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
+}
+
 function showLoadingScreen() {
     const overlay = document.createElement("div");
     overlay.id = "loading-screen";
@@ -79,4 +111,11 @@ function showGameCollection(games) {
     });
 }
 
-export {buildNavigationBar, showGameCollection, showLoadingScreen, hideLoadingScreen};
+export {
+    buildNavigationBar,
+    showGameCollection,
+    showLoadingScreen,
+    hideLoadingScreen,
+    getStorageValue,
+    setStorageValue,
+};
