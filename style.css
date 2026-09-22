@@ -170,7 +170,7 @@ body {
         }
     }
 
-    #filter-section, #team-section {
+    #filter-section, #team-section, #room-host-picker {
         text-align: center;
 
         .filter-controls {
@@ -178,6 +178,10 @@ body {
                 margin: 5px 0;
             }
         }
+    }
+
+    #room-pick-results {
+        margin: 1.5rem 0;
     }
 
     .card {
@@ -231,6 +235,113 @@ body {
         flex-direction: column;
         justify-content: center;
         align-items: center;
+    }
+
+    .ranking-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #27272a;
+            border-left: 4px solid var(--secondary);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            cursor: grab;
+
+            &.dragging {
+                opacity: 0.4;
+            }
+
+            .ranking-position {
+                font-weight: bold;
+                color: var(--secondary);
+            }
+        }
+    }
+
+    .participants-list, .results-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        li {
+            background: #27272a;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+
+    .results-list {
+        counter-reset: result-rank;
+
+        li {
+            counter-increment: result-rank;
+
+            &::before {
+                content: counter(result-rank) ". ";
+                color: var(--secondary);
+                font-weight: bold;
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+    .open-rooms-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+
+        h2 {
+            margin: 0;
+        }
+
+        button {
+            width: auto;
+            padding: 0.6rem 1.2rem;
+        }
+    }
+
+    .open-rooms-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        li {
+            background: #27272a;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+
+            button {
+                width: auto;
+                padding: 0.5rem 1rem;
+            }
+        }
+    }
+
+    .room-error {
+        color: #ef4444;
+        text-align: center;
     }
 
     textarea {

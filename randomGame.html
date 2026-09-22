@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zufallsgenerator</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="index.js" type="module"></script>
 </head>
 <body>
-    <section id="filter-section">
+    <section id="lobby-section">
         <h1>Zufallsgenerator für Spiele</h1>
-        <div class="card filter-controls">
-            <input type="number" id="filter-players" placeholder="Wie viele Spieler seit ihr?" min="1">
-            <input type="number" id="filter-time" placeholder="Wie lange habt ihr maximal Zeit?" min="1">
-            <button id="pick-random-games-button" class="button-secondary">Bekomme 5 Vorschläge</button>
+        <div class="card">
+            <div class="open-rooms-header">
+                <h2>Offene Räume</h2>
+                <button id="create-room-button" class="button-primary">Raum erstellen</button>
+            </div>
+            <ul id="open-rooms-list" class="open-rooms-list"></ul>
         </div>
-        <div id="random-results" class="grid"></div>
     </section>
 </body>
 </html>

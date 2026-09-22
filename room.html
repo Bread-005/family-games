@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiele-Raum</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="index.js" type="module"></script>
+</head>
+<body>
+    <section id="room-section">
+        <h1>Spiele-Raum</h1>
+
+        <div id="room-host-picker" class="card" hidden>
+            <div class="filter-controls">
+                <input type="number" id="room-filter-players" placeholder="Wie viele Spieler seid ihr?" min="1">
+                <input type="number" id="room-filter-time" placeholder="Wie lange habt ihr maximal Zeit?" min="1">
+                <button id="room-pick-button" class="button-secondary">Bekomme 5 Vorschläge</button>
+            </div>
+            <div id="room-pick-results" class="grid"></div>
+            <button id="room-start-ranking-button" class="button-primary" hidden>Ranking starten</button>
+        </div>
+
+        <div id="room-waiting-for-host" class="card" hidden>
+            <p>Warte darauf, dass der Host Spiele auswählt...</p>
+            <div id="room-waiting-for-host-games" class="grid"></div>
+        </div>
+
+        <div id="room-ranking" class="card" hidden>
+            <p>Ordne die Spiele von Platz 1 (oben) bis Platz 5 (unten) per Drag &amp; Drop:</p>
+            <ul id="room-ranking-list" class="ranking-list"></ul>
+            <button id="room-submit-ranking-button" class="button-primary">Ranking abschicken</button>
+        </div>
+
+        <div id="room-waiting" class="card" hidden>
+            <p>Warte auf alle Mitspielenden...</p>
+            <ul id="room-participants-list" class="participants-list"></ul>
+        </div>
+
+        <div id="room-results" class="card" hidden>
+            <h2>Ergebnis</h2>
+            <ol id="room-results-list" class="results-list"></ol>
+        </div>
+
+        <p id="room-error" class="room-error" hidden></p>
+    </section>
+</body>
+</html>

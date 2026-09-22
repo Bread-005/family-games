@@ -8,6 +8,8 @@ import {
     initUserName,
 } from "./functions.js";
 
+const ROOM_API_URL = "https://family-games-jaze.onrender.com";
+
 function parseDateDE(dateString) {
     if (!dateString) {
         return new Date(0);
@@ -126,75 +128,51 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateBanSelect();
     }
 
-    // Random Game Picker page
+    // Random Game Picker page (room lobby)
     if (window.location.pathname.includes("randomGame.html")) {
-        let availableGames = [];
-        let selectedGames = [];
+        document.getElementById("create-room-button").addEventListener("click", async () => {
+            const creatorName = getStorageValue("userName", "Unbekannt");
 
-        function pickRandomGame(pool, excludedNames) {
-            const candidates = pool.filter(game => !excludedNames.includes(game.name));
-            const source = candidates.length > 0 ? candidates : pool;
-            return source[Math.floor(Math.random() * source.length)];
-        }
+            const response = await fetch(ROOM_API_URL + "/rooms", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ creatorName }),
+            });
+            const room = await response.json();
 
-        function renderRandomResults() {
-            const resultsDiv = document.getElementById("random-results");
-            resultsDiv.innerHTML = "";
+            window.location.href = "room.html?code=" + room.roomCode;
+        });
 
-            if (selectedGames.length === 0) {
-                resultsDiv.innerHTML = '<p>No games match those settings.</p>';
+        function renderOpenRooms(openRooms) {
+            const listElement = document.getElementById("open-rooms-list");
+            listElement.innerHTML = "";
+
+            if (openRooms.length === 0) {
+                listElement.innerHTML = "<li>Momentan sind keine Räume offen.</li>";
                 return;
             }
 
-            selectedGames.forEach((game, index) => {
-                const item = document.createElement("div");
-                item.className = "game-card";
-                item.style.borderColor = "#9333ea";
-                item.style.flexDirection = "row";
-                item.style.justifyContent = "flex-start";
-                item.style.gap = "0.75rem";
+            openRooms.forEach(room => {
+                const item = document.createElement("li");
 
-                const rerollButton = document.createElement("button");
-                rerollButton.textContent = "🔁";
-                rerollButton.title = "Spiel neu auswürfeln";
-                rerollButton.style.background = "none";
-                rerollButton.style.border = "none";
-                rerollButton.style.color = "#9333ea";
-                rerollButton.style.cursor = "pointer";
-                rerollButton.style.fontSize = "1.2rem";
-                rerollButton.addEventListener("click", () => {
-                    const excludedNames = selectedGames
-                        .filter((selectedGame, selectedIndex) => selectedIndex !== index)
-                        .map(selectedGame => selectedGame.name);
-                    selectedGames[index] = pickRandomGame(availableGames, excludedNames);
-                    renderRandomResults();
+                const label = document.createElement("span");
+                label.textContent = `${room.creatorName} · ${room.gameCount} Spiele · ${room.participantCount} Mitspielende`;
+                item.append(label);
+
+                const joinButton = document.createElement("button");
+                joinButton.className = "button-secondary";
+                joinButton.textContent = "Beitreten";
+                joinButton.addEventListener("click", () => {
+                    window.location.href = "room.html?code=" + room.roomCode;
                 });
-                item.append(rerollButton);
+                item.append(joinButton);
 
-                const gameName = document.createElement("strong");
-                gameName.textContent = game.name;
-                item.append(gameName);
-
-                resultsDiv.appendChild(item);
+                listElement.append(item);
             });
         }
 
-        document.getElementById("pick-random-games-button").addEventListener("click", () => {
-            const playerCount = parseInt(document.getElementById("filter-players").value) || 0;
-            const maxTime = parseInt(document.getElementById("filter-time").value) || Infinity;
-
-            // 1. Filter based on user input
-            availableGames = games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) &&
-                game.maxTime <= maxTime && !bannedGames.includes(game.name) && !game.isCopy && !game.isExpansion);
-
-            // 2. Shuffle the filtered list
-            const shuffled = [...availableGames].sort(() => 0.5 - Math.random());
-
-            // 3. Take first 5
-            selectedGames = shuffled.slice(0, 5);
-
-            renderRandomResults();
-        });
+        const roomsOverviewSocket = io(ROOM_API_URL);
+        roomsOverviewSocket.on("rooms-list", renderOpenRooms);
     }
 
     // Team Generator page
@@ -229,5 +207,248 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("team-blue-list").innerHTML = teamBlue.map(p => `<li style="padding: 5px 0; border-bottom: 1px solid #333;">${p}</li>`).join('');
             document.getElementById("team-red-list").innerHTML = teamRed.map(p => `<li style="padding: 5px 0; border-bottom: 1px solid #333;">${p}</li>`).join('');
         });
+    }
+
+    // Room page
+    if (window.location.pathname.includes("room.html")) {
+        const roomCode = new URLSearchParams(window.location.search).get("code");
+        const userName = getStorageValue("userName", "Unbekannt");
+        const bannedGames = getStorageValue("bannedGames", []);
+        let currentRanking = [];
+        let pickedGames = [];
+        let availableGames = [];
+        let socket = null;
+
+        function getAvailableGames() {
+            const playerCount = parseInt(document.getElementById("room-filter-players").value) || 0;
+            const maxTime = parseInt(document.getElementById("room-filter-time").value) || Infinity;
+
+            return games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) &&
+                game.maxTime <= maxTime && !bannedGames.includes(game.name) && !game.isCopy && !game.isExpansion);
+        }
+
+        function hideRoomSections() {
+            document.getElementById("room-host-picker").hidden = true;
+            document.getElementById("room-waiting-for-host").hidden = true;
+            document.getElementById("room-ranking").hidden = true;
+            document.getElementById("room-waiting").hidden = true;
+            document.getElementById("room-results").hidden = true;
+        }
+
+        function showRoomError(message) {
+            hideRoomSections();
+            const errorElement = document.getElementById("room-error");
+            errorElement.textContent = message;
+            errorElement.hidden = false;
+        }
+
+        function pickRandomGame(pool, excludedNames) {
+            const candidates = pool.filter(game => !excludedNames.includes(game.name));
+            const source = candidates.length > 0 ? candidates : pool;
+            return source[Math.floor(Math.random() * source.length)];
+        }
+
+        function renderPickedGames() {
+            const resultsDiv = document.getElementById("room-pick-results");
+            resultsDiv.innerHTML = "";
+
+            pickedGames.forEach((game, index) => {
+                const item = document.createElement("div");
+                item.className = "game-card";
+                item.style.borderColor = "#9333ea";
+                item.style.flexDirection = "row";
+                item.style.justifyContent = "flex-start";
+                item.style.gap = "0.75rem";
+
+                const rerollButton = document.createElement("button");
+                rerollButton.textContent = "🔁";
+                rerollButton.title = "Spiel neu auswürfeln";
+                rerollButton.style.background = "none";
+                rerollButton.style.border = "none";
+                rerollButton.style.color = "#9333ea";
+                rerollButton.style.cursor = "pointer";
+                rerollButton.style.fontSize = "1.2rem";
+                rerollButton.addEventListener("click", () => {
+                    const excludedNames = pickedGames
+                        .filter((pickedGame, pickedIndex) => pickedIndex !== index)
+                        .map(pickedGame => pickedGame.name);
+                    pickedGames[index] = pickRandomGame(availableGames, excludedNames);
+                    renderPickedGames();
+                    socket.emit("preview-games", {
+                        roomCode,
+                        name: userName,
+                        games: pickedGames.map(pickedGame => pickedGame.name),
+                    });
+                });
+                item.append(rerollButton);
+
+                const gameName = document.createElement("strong");
+                gameName.textContent = game.name;
+                item.append(gameName);
+
+                resultsDiv.appendChild(item);
+            });
+
+            document.getElementById("room-start-ranking-button").hidden = pickedGames.length === 0;
+        }
+
+        document.getElementById("room-pick-button").addEventListener("click", () => {
+            availableGames = getAvailableGames();
+
+            const shuffled = [...availableGames].sort(() => 0.5 - Math.random());
+            pickedGames = shuffled.slice(0, 5);
+
+            renderPickedGames();
+            socket.emit("preview-games", {
+                roomCode,
+                name: userName,
+                games: pickedGames.map(pickedGame => pickedGame.name),
+            });
+        });
+
+        function renderRankingList() {
+            const listElement = document.getElementById("room-ranking-list");
+            listElement.innerHTML = "";
+
+            currentRanking.forEach((game, index) => {
+                const item = document.createElement("li");
+                item.className = "ranking-item";
+                item.draggable = true;
+                item.dataset.index = String(index);
+
+                const position = document.createElement("span");
+                position.className = "ranking-position";
+                position.textContent = (index + 1) + ".";
+                item.append(position);
+
+                const gameName = document.createElement("span");
+                gameName.textContent = game;
+                item.append(gameName);
+
+                item.addEventListener("dragstart", (event) => {
+                    event.dataTransfer.setData("text/plain", String(index));
+                    item.classList.add("dragging");
+                });
+                item.addEventListener("dragend", () => {
+                    item.classList.remove("dragging");
+                });
+                item.addEventListener("dragover", (event) => {
+                    event.preventDefault();
+                });
+                item.addEventListener("drop", (event) => {
+                    event.preventDefault();
+                    const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
+                    const droppedIndex = parseInt(item.dataset.index);
+                    if (draggedIndex === droppedIndex) {
+                        return;
+                    }
+                    const reordered = [...currentRanking];
+                    const [draggedGame] = reordered.splice(draggedIndex, 1);
+                    reordered.splice(droppedIndex, 0, draggedGame);
+                    currentRanking = reordered;
+                    renderRankingList();
+                });
+
+                listElement.append(item);
+            });
+        }
+
+        function renderWaitingForHostGames(draftGames) {
+            const gamesDiv = document.getElementById("room-waiting-for-host-games");
+            gamesDiv.innerHTML = "";
+
+            (draftGames || []).forEach(gameName => {
+                const item = document.createElement("div");
+                item.className = "game-card";
+                item.style.borderColor = "#9333ea";
+
+                const nameElement = document.createElement("strong");
+                nameElement.textContent = gameName;
+                item.append(nameElement);
+
+                gamesDiv.appendChild(item);
+            });
+        }
+
+        function renderParticipants(participants) {
+            const listElement = document.getElementById("room-participants-list");
+            listElement.innerHTML = "";
+
+            participants.forEach(participant => {
+                const item = document.createElement("li");
+                const nameSpan = document.createElement("span");
+                nameSpan.textContent = participant.name;
+                item.append(nameSpan);
+
+                const statusSpan = document.createElement("span");
+                statusSpan.textContent = participant.hasSubmitted ? "✅" : "⏳";
+                item.append(statusSpan);
+
+                listElement.append(item);
+            });
+        }
+
+        function renderResults(results) {
+            const listElement = document.getElementById("room-results-list");
+            listElement.innerHTML = "";
+
+            results.forEach(result => {
+                const item = document.createElement("li");
+                item.textContent = `${result.name} (${result.points} Punkte)`;
+                listElement.append(item);
+            });
+        }
+
+        function applyRoomState(roomState) {
+            hideRoomSections();
+
+            if (roomState.games === null) {
+                const isHost = roomState.creatorName === userName;
+                document.getElementById("room-host-picker").hidden = !isHost;
+                document.getElementById("room-waiting-for-host").hidden = isHost;
+                if (!isHost) {
+                    renderWaitingForHostGames(roomState.draftGames);
+                }
+                return;
+            }
+
+            if (roomState.isCompleted) {
+                document.getElementById("room-results").hidden = false;
+                renderResults(roomState.results);
+                return;
+            }
+
+            const participant = roomState.participants.find(candidate => candidate.name === userName);
+            if (participant && participant.hasSubmitted) {
+                document.getElementById("room-waiting").hidden = false;
+                renderParticipants(roomState.participants);
+                return;
+            }
+
+            document.getElementById("room-ranking").hidden = false;
+            currentRanking = roomState.games;
+            renderRankingList();
+        }
+
+        if (!roomCode) {
+            showRoomError("Kein Raum-Code angegeben.");
+        } else {
+            socket = io(ROOM_API_URL);
+
+            socket.on("connect", () => {
+                socket.emit("join-room", { roomCode, name: userName });
+            });
+
+            socket.on("room-state", applyRoomState);
+            socket.on("room-error", showRoomError);
+
+            document.getElementById("room-start-ranking-button").addEventListener("click", () => {
+                socket.emit("set-games", { roomCode, name: userName, games: pickedGames.map(game => game.name) });
+            });
+
+            document.getElementById("room-submit-ranking-button").addEventListener("click", () => {
+                socket.emit("submit-ranking", { roomCode, name: userName, ranking: currentRanking });
+            });
+        }
     }
 });

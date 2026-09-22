@@ -9,10 +9,11 @@ All pages share a single entry point (`index.js`) loaded as an ES module. Page-s
 ```
 index.html          — Game collection with sort filter
 banlist.html        — Ban games from the random picker
-randomGame.html     — Random game suggestions based on player count & time
+randomGame.html     — Lobby: create a room or join one of the currently open rooms
+room.html           — Host picks 5 random games (player count & time filters), everyone drag & drop ranks them, view live status and final results
 teams.html          — Random turn order and team splitter
 functions.js        — buildNavigationBar(), showGameCollection(), showLoadingScreen(), hideLoadingScreen(), getStorageValue(), setStorageValue(), initUserName()
-index.js            — All page logic + parseDateDE(), sortGames()
+index.js            — All page logic + parseDateDE(), sortGames(), ROOM_API_URL
 style.css           — Single stylesheet with nested CSS (modern browser required)
 server/             — Node.js/Express backend for ranking rooms, see below
 ```
