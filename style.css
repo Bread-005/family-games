@@ -7,6 +7,11 @@
     --text-dim: #a1a1aa;
 }
 
+html {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
 body {
     background-color: var(--bg-color);
     color: var(--text);
@@ -254,9 +259,19 @@ body {
             border-radius: 8px;
             padding: 0.75rem 1rem;
             cursor: grab;
+            touch-action: none;
 
             &.dragging {
                 opacity: 0.4;
+            }
+
+            &.touch-lifted {
+                opacity: 1;
+                position: relative;
+                z-index: 10;
+                pointer-events: none;
+                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+                transition: box-shadow 0.15s ease;
             }
 
             .ranking-position {

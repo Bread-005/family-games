@@ -217,6 +217,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         let currentRanking = [];
         let pickedGames = [];
         let availableGames = [];
+        let touchDraggedIndex = null;
+        let touchStartClientY = null;
+        let mouseDraggedIndex = null;
         let socket = null;
 
         function getAvailableGames() {
@@ -306,6 +309,28 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
 
+        function reorderRanking(listElement, draggedIndex, targetIndex) {
+            const items = Array.from(listElement.children);
+            const draggedElement = items[draggedIndex];
+            const targetElement = items[targetIndex];
+            if (!draggedElement || !targetElement) {
+                return;
+            }
+            if (draggedIndex < targetIndex) {
+                targetElement.after(draggedElement);
+            } else {
+                targetElement.before(draggedElement);
+            }
+
+            const [draggedGame] = currentRanking.splice(draggedIndex, 1);
+            currentRanking.splice(targetIndex, 0, draggedGame);
+
+            Array.from(listElement.children).forEach((child, displayIndex) => {
+                child.dataset.index = String(displayIndex);
+                child.querySelector(".ranking-position").textContent = (displayIndex + 1) + ".";
+            });
+        }
+
         function renderRankingList() {
             const listElement = document.getElementById("room-ranking-list");
             listElement.innerHTML = "";
@@ -326,27 +351,63 @@ document.addEventListener("DOMContentLoaded", async () => {
                 item.append(gameName);
 
                 item.addEventListener("dragstart", (event) => {
-                    event.dataTransfer.setData("text/plain", String(index));
+                    mouseDraggedIndex = parseInt(item.dataset.index);
+                    event.dataTransfer.setData("text/plain", String(mouseDraggedIndex));
                     item.classList.add("dragging");
                 });
                 item.addEventListener("dragend", () => {
                     item.classList.remove("dragging");
+                    mouseDraggedIndex = null;
                 });
                 item.addEventListener("dragover", (event) => {
                     event.preventDefault();
+                    if (mouseDraggedIndex === null) {
+                        return;
+                    }
+                    const targetIndex = parseInt(item.dataset.index);
+                    if (targetIndex === mouseDraggedIndex) {
+                        return;
+                    }
+                    reorderRanking(listElement, mouseDraggedIndex, targetIndex);
+                    mouseDraggedIndex = targetIndex;
                 });
                 item.addEventListener("drop", (event) => {
                     event.preventDefault();
-                    const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
-                    const droppedIndex = parseInt(item.dataset.index);
-                    if (draggedIndex === droppedIndex) {
+                });
+
+                item.addEventListener("touchstart", (event) => {
+                    touchDraggedIndex = parseInt(item.dataset.index);
+                    touchStartClientY = event.touches[0].clientY;
+                    item.classList.add("dragging");
+                    item.classList.add("touch-lifted");
+                }, { passive: true });
+                item.addEventListener("touchmove", (event) => {
+                    if (touchDraggedIndex === null) {
                         return;
                     }
-                    const reordered = [...currentRanking];
-                    const [draggedGame] = reordered.splice(draggedIndex, 1);
-                    reordered.splice(droppedIndex, 0, draggedGame);
-                    currentRanking = reordered;
-                    renderRankingList();
+                    event.preventDefault();
+                    const touch = event.touches[0];
+                    const liftOffset = touch.clientY - touchStartClientY;
+                    item.style.transform = `translateY(${liftOffset}px) scale(1.04)`;
+
+                    const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const targetItem = elementUnderTouch ? elementUnderTouch.closest(".ranking-item") : null;
+                    if (!targetItem) {
+                        return;
+                    }
+                    const targetIndex = parseInt(targetItem.dataset.index);
+                    if (targetIndex === touchDraggedIndex) {
+                        return;
+                    }
+                    reorderRanking(listElement, touchDraggedIndex, targetIndex);
+                    touchDraggedIndex = targetIndex;
+                    touchStartClientY = touch.clientY;
+                }, { passive: false });
+                item.addEventListener("touchend", () => {
+                    item.classList.remove("touch-lifted");
+                    item.style.transform = "";
+                    touchDraggedIndex = null;
+                    touchStartClientY = null;
                 });
 
                 listElement.append(item);
