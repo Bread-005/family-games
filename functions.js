@@ -54,6 +54,108 @@ function hideLoadingScreen() {
     }
 }
 
+/**
+ * Displays a full-screen overlay asking the user for their name.
+ * @param {(name: string) => void} onConfirm - Called with the trimmed name once confirmed.
+ */
+function showUserNameOverlay(onConfirm) {
+    const overlay = document.createElement("div");
+    overlay.id = "user-name-overlay";
+    overlay.className = "user-name-overlay";
+
+    const title = document.createElement("p");
+    title.className = "user-name-overlay-title";
+    title.textContent = "Wie heißt du?";
+    overlay.append(title);
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = "user-name-input";
+    input.placeholder = "Dein Name";
+    overlay.append(input);
+
+    const confirmButton = document.createElement("button");
+    confirmButton.className = "button-primary";
+    confirmButton.textContent = "Bestätigen";
+    overlay.append(confirmButton);
+
+    function confirmName() {
+        const name = input.value.trim();
+        if (name === "") {
+            return;
+        }
+        overlay.remove();
+        onConfirm(name);
+    }
+
+    confirmButton.addEventListener("click", confirmName);
+    input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            confirmName();
+        }
+    });
+
+    document.body.append(overlay);
+    input.focus();
+}
+
+/**
+ * Displays the fixed top-right badge showing the current user's name with a rename option.
+ * @param {string} name - The name to display.
+ * @param {() => void} onRename - Called when the rename button is clicked.
+ */
+function showUserNameBadge(name, onRename) {
+    const existingBadge = document.getElementById("user-name-badge");
+    if (existingBadge) {
+        existingBadge.remove();
+    }
+
+    const badge = document.createElement("div");
+    badge.id = "user-name-badge";
+    badge.className = "user-name-badge";
+
+    const nameLabel = document.createElement("span");
+    nameLabel.className = "user-name-label";
+    nameLabel.textContent = name;
+    badge.append(nameLabel);
+
+    const renameButton = document.createElement("button");
+    renameButton.className = "user-name-rename-button";
+    renameButton.textContent = "Umbenennen";
+    renameButton.addEventListener("click", onRename);
+    badge.append(renameButton);
+
+    document.body.append(badge);
+}
+
+/**
+ * Ensures a user name is set: shows the overlay on first visit or after a rename,
+ * otherwise renders the badge directly. Persists the name via setStorageValue.
+ */
+function initUserName() {
+    function handleRename() {
+        setStorageValue("userName", null);
+        const badge = document.getElementById("user-name-badge");
+        if (badge) {
+            badge.remove();
+        }
+        showUserNameOverlay((name) => {
+            setStorageValue("userName", name);
+            showUserNameBadge(name, handleRename);
+        });
+    }
+
+    const storedName = getStorageValue("userName", null);
+    if (storedName) {
+        showUserNameBadge(storedName, handleRename);
+    } else {
+        showUserNameOverlay((name) => {
+            setStorageValue("userName", name);
+            showUserNameBadge(name, handleRename);
+        });
+    }
+}
+
 function buildNavigationBar() {
     const navBar = document.createElement("nav");
     navBar.classList.add("navbar");
@@ -118,4 +220,5 @@ export {
     hideLoadingScreen,
     getStorageValue,
     setStorageValue,
+    initUserName,
 };

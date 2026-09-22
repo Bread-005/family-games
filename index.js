@@ -5,6 +5,7 @@ import {
     hideLoadingScreen,
     getStorageValue,
     setStorageValue,
+    initUserName,
 } from "./functions.js";
 
 function parseDateDE(dateString) {
@@ -50,6 +51,7 @@ function sortGames(games, sortKey) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    initUserName();
     buildNavigationBar();
     showLoadingScreen();
 

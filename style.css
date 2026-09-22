@@ -39,6 +39,55 @@ body {
         }
     }
 
+    .user-name-overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        z-index: 1000;
+
+        .user-name-overlay-title {
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        input, button {
+            width: 240px;
+        }
+    }
+
+    .user-name-badge {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--card-bg);
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        text-align: right;
+        z-index: 900;
+
+        .user-name-label {
+            display: block;
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .user-name-rename-button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 0.2rem;
+        }
+    }
+
     .navbar {
         background: #18181b;
         padding: 1rem;

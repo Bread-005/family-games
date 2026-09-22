@@ -11,7 +11,7 @@ index.html          — Game collection with sort filter
 banlist.html        — Ban games from the random picker
 randomGame.html     — Random game suggestions based on player count & time
 teams.html          — Random turn order and team splitter
-functions.js        — buildNavigationBar(), showGameCollection(), showLoadingScreen(), hideLoadingScreen(), getStorageValue(), setStorageValue()
+functions.js        — buildNavigationBar(), showGameCollection(), showLoadingScreen(), hideLoadingScreen(), getStorageValue(), setStorageValue(), initUserName()
 index.js            — All page logic + parseDateDE(), sortGames()
 style.css           — Single stylesheet with nested CSS (modern browser required)
 ```
@@ -58,6 +58,7 @@ in `functions.js` — never touch `localStorage` directly.
 |------------------|----------------------------------------------------|
 | `bannedGames`     | JSON array of game name strings                    |
 | `gameSortKey`     | Active sort option (`"first-added"`, `"alphabet"`, `"playerCount"`, `"minTime"`, `"maxTime"`, `"releaseDate"`, `"firstPlayedDate"`) |
+| `userName`        | Display name entered via the `initUserName()` overlay/badge; `null` until set |
 
 ## Execution environment
 
