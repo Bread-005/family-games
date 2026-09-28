@@ -160,6 +160,15 @@ function buildNavigationBar() {
     const navBar = document.createElement("nav");
     navBar.classList.add("navbar");
 
+    const menuToggle = document.createElement("button");
+    menuToggle.classList.add("navbar-menu-toggle");
+    menuToggle.setAttribute("aria-label", "Navigation öffnen");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.textContent = "☰";
+
+    const linkList = document.createElement("div");
+    linkList.classList.add("navbar-links");
+
     for (let i = 0; i < 4; i++) {
         const anchor = document.createElement("a");
         if (i === 0) {
@@ -178,8 +187,16 @@ function buildNavigationBar() {
             anchor.textContent = "Team Generator";
             anchor.href = "teams.html";
         }
-        navBar.append(anchor);
+        linkList.append(anchor);
     }
+
+    menuToggle.addEventListener("click", () => {
+        const isOpen = linkList.classList.toggle("navbar-links-open");
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    navBar.append(menuToggle);
+    navBar.append(linkList);
     document.body.prepend(navBar);
 }
 
