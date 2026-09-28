@@ -468,6 +468,30 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         }
 
+        function ensureOwnRankingLoaded() {
+            if (currentRanking.length > 0) {
+                return;
+            }
+
+            const savedRanking = getStorageValue("lastRoomRanking", null);
+            if (savedRanking && savedRanking.roomCode === roomCode) {
+                currentRanking = savedRanking.ranking;
+            }
+        }
+
+        function renderOwnRanking(elementId) {
+            ensureOwnRankingLoaded();
+
+            const listElement = document.getElementById(elementId);
+            listElement.innerHTML = "";
+
+            currentRanking.forEach(game => {
+                const item = document.createElement("li");
+                item.textContent = game;
+                listElement.append(item);
+            });
+        }
+
         function renderResults(results) {
             const listElement = document.getElementById("room-results-list");
             listElement.innerHTML = "";
@@ -506,6 +530,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (roomState.isCompleted) {
                 document.getElementById("room-results").hidden = false;
                 renderResults(roomState.results);
+                renderOwnRanking("room-results-own-ranking");
                 return;
             }
 
@@ -513,6 +538,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (participant && participant.hasSubmitted) {
                 document.getElementById("room-waiting").hidden = false;
                 renderParticipants(roomState.participants);
+                renderOwnRanking("room-waiting-own-ranking");
                 return;
             }
 
@@ -548,6 +574,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             document.getElementById("room-submit-ranking-button").addEventListener("click", () => {
+                setStorageValue("lastRoomRanking", { roomCode, ranking: currentRanking });
                 socket.emit("submit-ranking", { roomCode, name: userName, ranking: currentRanking });
             });
         }
