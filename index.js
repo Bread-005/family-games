@@ -232,7 +232,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         function hideRoomSections() {
             document.getElementById("room-host-picker").hidden = true;
+            document.getElementById("room-host-players-display-card").hidden = true;
             document.getElementById("room-waiting-for-host").hidden = true;
+            document.getElementById("players-display-card").hidden = true;
             document.getElementById("room-ranking").hidden = true;
             document.getElementById("room-waiting").hidden = true;
             document.getElementById("room-results").hidden = true;
@@ -415,6 +417,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         }
 
+        function renderPlayersDisplay(elementId, participants) {
+            const participantsDiv = document.getElementById(elementId);
+            participantsDiv.innerHTML = "";
+
+            participants.forEach(participant => {
+                const item = document.createElement("div");
+                item.className = "game-card";
+
+                const nameElement = document.createElement("strong");
+                nameElement.textContent = participant.name;
+                item.append(nameElement);
+
+                participantsDiv.appendChild(item);
+            });
+        }
+
         function renderWaitingForHostGames(draftGames) {
             const gamesDiv = document.getElementById("room-waiting-for-host-games");
             gamesDiv.innerHTML = "";
@@ -467,8 +485,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (roomState.games === null) {
                 const isHost = roomState.creatorName === userName;
                 document.getElementById("room-host-picker").hidden = !isHost;
+                document.getElementById("room-host-players-display-card").hidden = !isHost;
                 document.getElementById("room-waiting-for-host").hidden = isHost;
-                if (!isHost) {
+                document.getElementById("players-display-card").hidden = isHost;
+                if (isHost) {
+                    renderPlayersDisplay("room-host-players-display", roomState.participants);
+                    if (pickedGames.length === 0 && Array.isArray(roomState.draftGames) && roomState.draftGames.length > 0) {
+                        pickedGames = roomState.draftGames
+                            .map(gameName => games.find(game => game.name === gameName))
+                            .filter(Boolean);
+                        renderPickedGames();
+                    }
+                } else {
+                    renderPlayersDisplay("players-display", roomState.participants);
                     renderWaitingForHostGames(roomState.draftGames);
                 }
                 return;
@@ -488,8 +517,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             document.getElementById("room-ranking").hidden = false;
-            currentRanking = roomState.games;
-            renderRankingList();
+            if (currentRanking.length === 0) {
+                currentRanking = roomState.games;
+                renderRankingList();
+            }
         }
 
         if (!roomCode) {

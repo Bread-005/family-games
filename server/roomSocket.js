@@ -14,6 +14,7 @@ import {
 
 const DISCONNECT_GRACE_PERIOD_MILLISECONDS = 2000;
 const pendingParticipantLeaves = new Map();
+const activeParticipantSockets = new Map();
 
 /**
  * Wires up the Socket.IO events that keep all participants of a room in sync:
@@ -41,18 +42,20 @@ function registerRoomSocketHandlers(io, rankingsCollection) {
                 return;
             }
 
-            cancelPendingParticipantLeave(roomCode, name.trim());
+            const trimmedName = name.trim();
+            cancelPendingParticipantLeave(roomCode, trimmedName);
 
-            addParticipant(roomCode, name.trim());
+            addParticipant(roomCode, trimmedName);
             socket.data.roomCode = roomCode;
-            socket.data.name = name.trim();
+            socket.data.name = trimmedName;
+            activeParticipantSockets.set(buildPendingLeaveKey(roomCode, trimmedName), socket.id);
             socket.join(roomCode);
             io.to(roomCode).emit("room-state", buildRoomState(roomCode));
             io.emit("rooms-list", listOpenRooms());
         });
 
         socket.on("disconnect", () => {
-            scheduleParticipantLeave(io, socket.data.roomCode, socket.data.name);
+            scheduleParticipantLeave(io, socket.data.roomCode, socket.data.name, socket.id);
         });
 
         socket.on("leave-room", ({ roomCode, name }) => {
@@ -61,6 +64,7 @@ function registerRoomSocketHandlers(io, rankingsCollection) {
             }
 
             cancelPendingParticipantLeave(roomCode, name);
+            activeParticipantSockets.delete(buildPendingLeaveKey(roomCode, name));
             handleParticipantLeave(io, roomCode, name);
             delete socket.data.roomCode;
             delete socket.data.name;
@@ -172,11 +176,19 @@ function buildPendingLeaveKey(roomCode, name) {
  * cancels the scheduled removal before it fires, so the reload is invisible to other
  * participants. A genuine leave (navigating away, closing the tab) has nothing left to cancel
  * it, so the removal proceeds once the grace period elapses.
+ *
+ * The rejoin's "join-room" and this disconnect are two independent events racing each other,
+ * so the rejoin is not guaranteed to be the one that arrives first — cancelPendingParticipantLeave()
+ * alone cannot cover the case where this disconnect is only detected after the rejoin already
+ * happened. As a safety net, the scheduled removal is skipped if activeParticipantSockets no
+ * longer points at the socket that disconnected, meaning a newer socket already took over for
+ * this participant.
  * @param {import("socket.io").Server} io - The Socket.IO server.
  * @param {string|undefined} roomCode - The room the disconnecting socket had joined, if any.
  * @param {string|undefined} name - The disconnecting participant's name, if any.
+ * @param {string} socketId - The id of the socket that disconnected.
  */
-function scheduleParticipantLeave(io, roomCode, name) {
+function scheduleParticipantLeave(io, roomCode, name, socketId) {
     if (!roomCode || !name) {
         return;
     }
@@ -186,6 +198,12 @@ function scheduleParticipantLeave(io, roomCode, name) {
 
     const leaveTimeout = setTimeout(() => {
         pendingParticipantLeaves.delete(pendingLeaveKey);
+
+        if (activeParticipantSockets.get(pendingLeaveKey) !== socketId) {
+            return;
+        }
+
+        activeParticipantSockets.delete(pendingLeaveKey);
         handleParticipantLeave(io, roomCode, name);
     }, DISCONNECT_GRACE_PERIOD_MILLISECONDS);
 

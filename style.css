@@ -9,7 +9,6 @@
 
 html {
     overflow-x: hidden;
-    overflow-y: hidden;
 }
 
 body {
@@ -147,6 +146,10 @@ body {
         margin: 2rem auto;
         padding: 0.5rem 1rem;
 
+        h1 {
+            text-align: center;
+        }
+
         .form-row {
             display: flex;
             gap: 1rem;
@@ -161,6 +164,10 @@ body {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1rem;
+        }
+
+        #room-host-players-display, #players-display {
+            margin-top: 1rem;
         }
 
         #game-form {
