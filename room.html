@@ -15,7 +15,8 @@
         <div id="room-host-picker" class="card" hidden>
             <div class="filter-controls">
                 <input type="number" id="room-filter-players" placeholder="Wie viele Spieler seid ihr?" min="1">
-                <input type="number" id="room-filter-time" placeholder="Wie lange habt ihr maximal Zeit?" min="1">
+                <input type="number" id="room-filter-game-amount" placeholder="Wie viele Spiele wollt ihr ranken?" min="2" max="10">
+                <input type="text" id="room-filter-game-select" placeholder="Welche Spiele wollt ihr ranken? (Komma getrennt eingeben)">
                 <button id="room-pick-button" class="button-secondary">Bekomme 5 Vorschläge</button>
             </div>
             <div id="room-pick-results" class="grid"></div>

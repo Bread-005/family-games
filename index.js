@@ -216,6 +216,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const bannedGames = getStorageValue("bannedGames", []);
         let currentRanking = [];
         let pickedGames = [];
+        let isManualPick = false;
         let availableGames = [];
         let touchDraggedIndex = null;
         let touchStartClientY = null;
@@ -224,10 +225,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         function getAvailableGames() {
             const playerCount = parseInt(document.getElementById("room-filter-players").value) || 0;
-            const maxTime = parseInt(document.getElementById("room-filter-time").value) || Infinity;
 
             return games.filter(game => (game.minPlayers <= playerCount && game.maxPlayers >= playerCount || !playerCount) &&
-                game.maxTime <= maxTime && !bannedGames.includes(game.name) && !game.isCopy && !game.isExpansion);
+                !bannedGames.includes(game.name) && !game.isCopy && !game.isExpansion);
         }
 
         function hideRoomSections() {
@@ -265,27 +265,29 @@ document.addEventListener("DOMContentLoaded", async () => {
                 item.style.justifyContent = "flex-start";
                 item.style.gap = "0.75rem";
 
-                const rerollButton = document.createElement("button");
-                rerollButton.textContent = "🔁";
-                rerollButton.title = "Spiel neu auswürfeln";
-                rerollButton.style.background = "none";
-                rerollButton.style.border = "none";
-                rerollButton.style.color = "#9333ea";
-                rerollButton.style.cursor = "pointer";
-                rerollButton.style.fontSize = "1.2rem";
-                rerollButton.addEventListener("click", () => {
-                    const excludedNames = pickedGames
-                        .filter((pickedGame, pickedIndex) => pickedIndex !== index)
-                        .map(pickedGame => pickedGame.name);
-                    pickedGames[index] = pickRandomGame(availableGames, excludedNames);
-                    renderPickedGames();
-                    socket.emit("preview-games", {
-                        roomCode,
-                        name: userName,
-                        games: pickedGames.map(pickedGame => pickedGame.name),
+                if (!isManualPick && availableGames.length > 0) {
+                    const rerollButton = document.createElement("button");
+                    rerollButton.textContent = "🔁";
+                    rerollButton.title = "Spiel neu auswürfeln";
+                    rerollButton.style.background = "none";
+                    rerollButton.style.border = "none";
+                    rerollButton.style.color = "#9333ea";
+                    rerollButton.style.cursor = "pointer";
+                    rerollButton.style.fontSize = "1.2rem";
+                    rerollButton.addEventListener("click", () => {
+                        const excludedNames = pickedGames
+                            .filter((pickedGame, pickedIndex) => pickedIndex !== index)
+                            .map(pickedGame => pickedGame.name);
+                        pickedGames[index] = pickRandomGame(availableGames, excludedNames);
+                        renderPickedGames();
+                        socket.emit("preview-games", {
+                            roomCode,
+                            name: userName,
+                            games: pickedGames.map(pickedGame => pickedGame.name),
+                        });
                     });
-                });
-                item.append(rerollButton);
+                    item.append(rerollButton);
+                }
 
                 const gameName = document.createElement("strong");
                 gameName.textContent = game.name;
@@ -298,10 +300,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         document.getElementById("room-pick-button").addEventListener("click", () => {
+            if (document.getElementById("room-pick-button").textContent === "Spiele Ranking ansehen") {
+                const manualInput = document.getElementById("room-filter-game-select").value;
+                const manualGameNames = manualInput.split(",").map(name => name.trim()).filter(name => name !== "");
+
+                if (manualGameNames.length < 2) {
+                    alert("Bitte gib mindestens 2 Spiele ein!");
+                    return;
+                }
+
+                pickedGames = manualGameNames.map(name => games.find(game => game.name === name) || { name });
+                isManualPick = true;
+                renderPickedGames();
+                socket.emit("preview-games", {
+                    roomCode,
+                    name: userName,
+                    games: pickedGames.map(pickedGame => pickedGame.name),
+                });
+                return;
+            }
+
             availableGames = getAvailableGames();
+            const gameAmount = parseInt(document.getElementById("room-filter-game-amount").value) || 5;
 
             const shuffled = [...availableGames].sort(() => 0.5 - Math.random());
-            pickedGames = shuffled.slice(0, 5);
+            pickedGames = shuffled.slice(0, gameAmount);
+            isManualPick = false;
 
             renderPickedGames();
             socket.emit("preview-games", {
@@ -309,6 +333,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 name: userName,
                 games: pickedGames.map(pickedGame => pickedGame.name),
             });
+        });
+
+        document.getElementById("room-filter-game-amount").addEventListener("change", () => {
+            document.getElementById("room-pick-button").textContent = "Bekomme " + (parseInt(document.getElementById("room-filter-game-amount").value) || 5) + " Vorschläge";
+        });
+
+        document.getElementById("room-filter-game-amount").addEventListener("input", () => {
+            document.getElementById("room-pick-button").textContent = "Bekomme " + (parseInt(document.getElementById("room-filter-game-amount").value) || 5) + " Vorschläge";
+        });
+
+        document.getElementById("room-filter-game-select").addEventListener("input", () => {
+            document.getElementById("room-pick-button").textContent = "Spiele Ranking ansehen";
         });
 
         function reorderRanking(listElement, draggedIndex, targetIndex) {
