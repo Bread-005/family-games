@@ -8,6 +8,7 @@ export {
     setParticipantRanking,
     setRoomGames,
     setRoomDraftGames,
+    setRoomResults,
     listOpenRooms,
 };
 
@@ -28,6 +29,7 @@ function createRoom(roomCode, creatorName) {
         games: null,
         draftGames: null,
         participants: [{ name: creatorName, ranking: null }],
+        results: null,
         createdAt: Date.now(),
     });
 }
@@ -44,7 +46,7 @@ function roomCodeExists(roomCode) {
 /**
  * Reads a room's live state.
  * @param {string} roomCode - The room code to look up.
- * @returns {{creatorName: string, games: string[]|null, participants: {name: string, ranking: string[]|null}[], createdAt: number}|null}
+ * @returns {{creatorName: string, games: string[]|null, participants: {name: string, ranking: string[]|null}[], results: {name: string, points: number}[]|null, createdAt: number}|null}
  */
 function getRoom(roomCode) {
     return rooms.get(roomCode) || null;
@@ -135,6 +137,21 @@ function setRoomDraftGames(roomCode, draftGames) {
     }
 
     room.draftGames = draftGames;
+}
+
+/**
+ * Freezes a room's final result once every participant has submitted a ranking, so it stays
+ * unchanged regardless of participants leaving afterward.
+ * @param {string} roomCode - The room to update.
+ * @param {{name: string, points: number}[]} results - The room's final, frozen results.
+ */
+function setRoomResults(roomCode, results) {
+    const room = rooms.get(roomCode);
+    if (!room) {
+        return;
+    }
+
+    room.results = results;
 }
 
 /**

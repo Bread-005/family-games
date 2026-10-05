@@ -1,5 +1,5 @@
 import { Int32 } from "mongodb";
-import { isValidRanking } from "./ranking.js";
+import { calculateResults, isValidRanking } from "./ranking.js";
 import { buildRoomState } from "./roomState.js";
 import {
     getRoom,
@@ -9,6 +9,7 @@ import {
     setParticipantRanking,
     setRoomGames,
     setRoomDraftGames,
+    setRoomResults,
     listOpenRooms,
 } from "./roomStore.js";
 
@@ -148,11 +149,15 @@ function registerRoomSocketHandlers(io, rankingsCollection) {
 
             setParticipantRanking(roomCode, name, ranking);
 
-            const roomState = buildRoomState(roomCode);
-            if (roomState.isCompleted) {
-                await persistRoomResult(rankingsCollection, room);
+            const updatedRoom = getRoom(roomCode);
+            const hasEveryoneSubmitted = updatedRoom.participants.length > 0 &&
+                updatedRoom.participants.every(candidate => candidate.ranking !== null);
+            if (hasEveryoneSubmitted && updatedRoom.results === null) {
+                setRoomResults(roomCode, calculateResults(updatedRoom.games, updatedRoom.participants));
+                await persistRoomResult(rankingsCollection, updatedRoom);
             }
 
+            const roomState = buildRoomState(roomCode);
             io.to(roomCode).emit("room-state", roomState);
             io.emit("rooms-list", listOpenRooms());
         });

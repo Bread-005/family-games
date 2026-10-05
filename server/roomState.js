@@ -1,9 +1,9 @@
-import { calculateResults } from "./ranking.js";
 import { getRoom } from "./roomStore.js";
 
 /**
- * Shapes a room's in-memory state into the payload sent to clients, including
- * results once every participant has submitted their ranking.
+ * Shapes a room's in-memory state into the payload sent to clients, including the frozen
+ * results once the room has been completed. The results stay the same no matter which
+ * participants are still in the room, since they were frozen at completion time.
  * @param {string} roomCode - The room code to load.
  * @returns {{roomCode: string, creatorName: string, games: string[]|null, draftGames: string[]|null, participants: {name: string, hasSubmitted: boolean}[], isCompleted: boolean, results?: {name: string, points: number}[]}|null}
  */
@@ -17,8 +17,7 @@ function buildRoomState(roomCode) {
         name: participant.name,
         hasSubmitted: participant.ranking !== null,
     }));
-    const isCompleted = room.games !== null && participants.length > 0 &&
-        participants.every(participant => participant.hasSubmitted);
+    const isCompleted = room.results !== null;
 
     const roomState = {
         roomCode,
@@ -30,7 +29,7 @@ function buildRoomState(roomCode) {
     };
 
     if (isCompleted) {
-        roomState.results = calculateResults(room.games, room.participants);
+        roomState.results = room.results;
     }
 
     return roomState;
