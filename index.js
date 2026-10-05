@@ -130,17 +130,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Random Game Picker page (room lobby)
     if (window.location.pathname.includes("randomGame.html")) {
-        document.getElementById("create-room-button").addEventListener("click", async () => {
+        const createRoomButton = document.getElementById("create-room-button");
+        createRoomButton.addEventListener("click", async () => {
+            if (createRoomButton.disabled) {
+                return;
+            }
+            createRoomButton.disabled = true;
+
             const creatorName = getStorageValue("userName", "Unbekannt");
 
-            const response = await fetch(ROOM_API_URL + "/rooms", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ creatorName }),
-            });
-            const room = await response.json();
+            try {
+                const response = await fetch(ROOM_API_URL + "/rooms", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ creatorName }),
+                });
+                const room = await response.json();
 
-            window.location.href = "room.html?code=" + room.roomCode;
+                window.location.href = "room.html?code=" + room.roomCode;
+            } catch (error) {
+                createRoomButton.disabled = false;
+            }
         });
 
         function renderOpenRooms(openRooms) {
