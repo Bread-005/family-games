@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Stats</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="index.js" type="module"></script>
+</head>
+<body>
+    <section id="bg-stats-section">
+        <h1 style="text-align: center">BG Stats</h1>
+        <div class="card">
+            <label for="bg-stats-file-input">BG Stats Export-Datei hochladen</label>
+            <input type="file" id="bg-stats-file-input" accept=".json">
+            <p id="bg-stats-file-error" style="color: #ef4444; display: none;"></p>
+        </div>
+
+        <div id="bg-stats-winning-counts-card" class="card" hidden>
+            <h2>Ich Habe Fertig – Siegarten</h2>
+            <ul id="bg-stats-winning-counts-list" style="list-style: none; padding: 0;"></ul>
+        </div>
+    </section>
+</body>
+</html>

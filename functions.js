@@ -190,6 +190,14 @@ function buildNavigationBar() {
         linkList.append(anchor);
     }
 
+    const userName = getStorageValue("userName", null);
+    if (userName === "Jens" || userName === "Brot") {
+        const bgStatsAnchor = document.createElement("a");
+        bgStatsAnchor.textContent = "BG Stats";
+        bgStatsAnchor.href = "bgStats.html";
+        linkList.append(bgStatsAnchor);
+    }
+
     menuToggle.addEventListener("click", () => {
         const isOpen = linkList.classList.toggle("navbar-links-open");
         menuToggle.setAttribute("aria-expanded", String(isOpen));

@@ -219,6 +219,64 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // BG Stats page
+    if (window.location.pathname.includes("bgStats.html")) {
+        const fileErrorElement = document.getElementById("bg-stats-file-error");
+
+        document.getElementById("bg-stats-file-input").addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            fileErrorElement.style.display = "none";
+
+            if (!file) {
+                return;
+            }
+
+            if (!file.name.endsWith(".json") || !file.name.includes("BGStatsExport")) {
+                fileErrorElement.textContent = "Bitte eine gültige BGStatsExport-JSON-Datei hochladen.";
+                fileErrorElement.style.display = "block";
+                event.target.value = "";
+                return;
+            }
+
+            file.text().then(fileContent => {
+                console.log(JSON.parse(fileContent));
+
+                const stats = JSON.parse(fileContent);
+
+                const plays = stats.plays;
+
+                const winningCounts = [];
+
+                for (const play of plays) {
+                    if (play.gameRefId === 70 && play.comments) {
+                        const value = play.comments.split(" ").slice(1).join(" ").split("\n")[0].replace(" gewonnen", "");
+                        if (!winningCounts.find(element => element.name === value)) {
+                            winningCounts.push({name: value, amount: 1});
+                        } else {
+                            winningCounts.find(element => element.name === value).amount++;
+                        }
+                    }
+                }
+
+                winningCounts.sort((a, b) => b.amount - a.amount);
+
+                const winningCountsCard = document.getElementById("bg-stats-winning-counts-card");
+                const winningCountsList = document.getElementById("bg-stats-winning-counts-list");
+                winningCountsList.innerHTML = "";
+
+                winningCounts.forEach(winningCount => {
+                    const item = document.createElement("li");
+                    item.style.padding = "5px 0";
+                    item.style.borderBottom = "1px solid #333";
+                    item.textContent = `${winningCount.name}: ${winningCount.amount}`;
+                    winningCountsList.append(item);
+                });
+
+                winningCountsCard.hidden = false;
+            });
+        });
+    }
+
     // Room page
     if (window.location.pathname.includes("room.html")) {
         const roomCode = new URLSearchParams(window.location.search).get("code");
