@@ -248,13 +248,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const winningCounts = [];
 
                 for (const play of plays) {
-                    if (play.gameRefId === 70 && play.comments) {
-                        const value = play.comments.split(" ").slice(1).join(" ").split("\n")[0].replace(" gewonnen", "");
-                        if (!winningCounts.find(element => element.name === value)) {
-                            winningCounts.push({name: value, amount: 1});
-                        } else {
-                            winningCounts.find(element => element.name === value).amount++;
-                        }
+                    if (play.gameRefId !== 70) {
+                        continue;
+                    }
+
+                    const winningPlayerScore = play.playerScores.find(playerScore => playerScore.winner);
+                    if (!winningPlayerScore || !winningPlayerScore.role) {
+                        continue;
+                    }
+
+                    const winningRole = winningPlayerScore.role;
+                    const winningCount = winningCounts.find(element => element.name === winningRole);
+                    if (!winningCount) {
+                        winningCounts.push({name: winningRole, amount: 1});
+                    } else {
+                        winningCount.amount++;
                     }
                 }
 
